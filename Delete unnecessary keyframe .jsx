@@ -1,33 +1,44 @@
 {
-    // Pastikan ada komposisi aktif
+    // Make sure there is an active composition
     var comp = app.project.activeItem;
     if (!(comp && comp instanceof CompItem)) {
-        alert("Pilih sebuah composition terlebih dahulu.");
+        alert("Please select a composition first.");
     } else {
-        app.beginUndoGroup("Hapus Keyframe Duplikat");
+        app.beginUndoGroup("Remove Duplicate Keyframes");
 
-        // Ambil properti yang dipilih
+        // Get selected properties
         var selectedProps = comp.selectedProperties;
 
         if (selectedProps.length === 0) {
-            alert("Pilih properti keyframe terlebih dahulu.");
+            alert("Please select one or more properties with keyframes.");
         } else {
+            var totalInitial = 0;
+            var totalAfter = 0;
+
             for (var i = 0; i < selectedProps.length; i++) {
                 var prop = selectedProps[i];
                 if (prop.numKeys > 1) {
-                    // Loop dari akhir ke awal untuk menghapus keyframe
+                    var initialKeys = prop.numKeys;
+                    totalInitial += initialKeys;
+
+                    // Loop from last keyframe to first to safely remove duplicates
                     for (var k = prop.numKeys; k > 1; k--) {
                         var valCurrent = prop.keyValue(k);
                         var valPrev = prop.keyValue(k - 1);
 
-                        // Jika nilainya sama, hapus keyframe saat ini
                         if (valCurrent === valPrev) {
                             prop.removeKey(k);
                         }
                     }
+
+                    totalAfter += prop.numKeys;
+                } else if (prop.numKeys === 1) {
+                    totalInitial += 1;
+                    totalAfter += 1;
                 }
             }
-            alert("Selesai menghapus keyframe duplikat.");
+
+            alert("Duplicate keyframes removed!\nInitial total keyframes: " + totalInitial + "\nTotal after deletion: " + totalAfter);
         }
 
         app.endUndoGroup();
